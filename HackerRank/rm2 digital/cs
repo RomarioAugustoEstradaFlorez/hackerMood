@@ -1,0 +1,114 @@
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
+using System.Text;
+using System;
+
+
+
+class Result
+{
+
+    /*
+     * Complete the 'strokesRequired' function below.
+     *
+     * The function is expected to return an INTEGER.
+     * The function accepts STRING_ARRAY picture as parameter.
+     */
+
+    public static int strokesRequired(List<string> picture)
+    {
+        // constraints
+        
+        if((picture == null || picture.Count == null) 
+            && picture.Count < 1
+            && picture[0].Length < 1){
+                return 0;
+        } else if(picture.Count > 100000
+                && (picture.Count * picture[0].Length) > 100000) return 0;
+        
+        // dimensions of the picture
+        int height = picture.Count;
+        int width = picture[0].Length;
+        
+        // HashSet to keep looking the track of cells already visited
+        var visited = new HashSet<(int, int)>();
+        
+        // the count of strokes required initizialized
+        int strokes = 0;
+        
+        /*
+        *   defuse - This function checks if the current cell is
+        *           out of bounds, if that happens, it has a different 
+        *           color than the starting cell, or already thath cell 
+        *           where visited, so it returns if any of those conditions are true.
+        *               
+        *           It marks the current cell as visited by adding its coordinates to 
+        *           the visited set, and use recursive to call itself again four different times
+        *           four times, because there are for adjacent cells that have the same color as the starting cell.
+        */
+        void defuse(int a, int b, char color) {
+            if(a < 0 
+            || a >= height 
+            || b < 0 
+            || b >= width
+            || picture[a][b] != color
+            || visited.Contains((a, b))) return;
+            
+            visited.Add((a, b));
+            
+            defuse(a + 1, b, color);
+            defuse(a - 1, b, color);
+            
+            defuse(a, b + 1, color);
+            defuse(a, b - 1, color);
+        }
+        
+        // This iterate betwenn cells to know increase the stroke if the cell visited doesn' contain the actual cell
+        for(int i = 0; i < height; i++) {
+            for(int e = 0; e < width; e++) {
+                if(!visited.Contains((i, e))){
+                    char color = picture[i][e];
+                    strokes++;
+                    defuse(i, e, color);
+                }
+            }
+        }
+        
+        return strokes;
+    }
+
+}
+
+class Solution
+{
+    public static void Main(string[] args)
+    {
+        TextWriter textWriter = new StreamWriter(@System.Environment.GetEnvironmentVariable("OUTPUT_PATH"), true);
+
+        int pictureCount = Convert.ToInt32(Console.ReadLine().Trim());
+
+        List<string> picture = new List<string>();
+
+        for (int i = 0; i < pictureCount; i++)
+        {
+            string pictureItem = Console.ReadLine();
+            picture.Add(pictureItem);
+        }
+
+        int result = Result.strokesRequired(picture);
+
+        textWriter.WriteLine(result);
+
+        textWriter.Flush();
+        textWriter.Close();
+    }
+}
